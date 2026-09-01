@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vintage Tank — 360°</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#fff;font-family:Arial,sans-serif;color:#222}
+.wrap{max-width:900px;margin:0 auto;padding:18px}
+h1{text-align:center;font-size:22px;margin:4px 0 14px}
+.viewer{position:relative;width:100%;aspect-ratio:1/1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #ddd;border-radius:10px;touch-action:none;cursor:grab}
+.viewer.dragging{cursor:grabbing}
+.viewer img{width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.arrow{position:absolute;top:50%;transform:translateY(-50%);border:0;background:rgba(0,0,0,.65);color:#fff;width:44px;height:44px;border-radius:50%;font-size:28px;z-index:2}
+.left{left:12px}.right{right:12px}
+.controls{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+button.ctrl{border:1px solid #bbb;background:#fff;padding:9px 14px;border-radius:7px;cursor:pointer}
+.hint{text-align:center;color:#666;font-size:13px;margin-top:9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Vintage Tank — 360° View</h1>
+<div class="viewer" id="viewer">
+  <button class="arrow left" aria-label="Previous">‹</button>
+  <img id="spin" src="frame-1.jpg" alt="Vintage tank 360 view">
+  <button class="arrow right" aria-label="Next">›</button>
+</div>
+<div class="controls">
+  <button class="ctrl" id="play">▶ Auto Spin</button>
+  <button class="ctrl" id="reset">↺ Reset</button>
+</div>
+<div class="hint">Drag left or right to rotate • Use the arrows on touch devices</div>
+</div>
+<script>
+const frames = Array.from({length:6},(_,i)=>`frame-${i+1}.jpg`);
+const viewer=document.getElementById('viewer'), img=document.getElementById('spin');
+let index=0, dragging=false, startX=0, lastX=0, auto=null;
+
+frames.forEach(s=>{const im=new Image(); im.src=s;});
+function show(n){index=(n+frames.length)%frames.length; img.src=frames[index];}
+document.querySelector('.left').onclick=()=>show(index-1);
+document.querySelector('.right').onclick=()=>show(index+1);
+document.getElementById('reset').onclick=()=>show(0);
+
+viewer.addEventListener('pointerdown',e=>{
+  dragging=true; startX=e.clientX; lastX=e.clientX; viewer.classList.add('dragging');
+  viewer.setPointerCapture(e.pointerId);
+});
+viewer.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const dx=e.clientX-lastX;
+  if(Math.abs(dx)>=18){ show(index+(dx<0?1:-1)); lastX=e.clientX; }
+});
+viewer.addEventListener('pointerup',()=>{dragging=false;viewer.classList.remove('dragging')});
+viewer.addEventListener('pointercancel',()=>{dragging=false;viewer.classList.remove('dragging')});
+
+document.getElementById('play').onclick=()=>{
+  if(auto){clearInterval(auto);auto=null;document.getElementById('play').textContent='▶ Auto Spin';}
+  else{auto=setInterval(()=>show(index+1),650);document.getElementById('play').textContent='⏸ Stop';}
+};
+</script>
+</body>
+</html>
