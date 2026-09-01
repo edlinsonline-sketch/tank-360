@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vintage Championship Boxing Belt — 360° View</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+.wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 18px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 22px;
+    margin: 4px 0 14px;
+}
+
+.viewer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+}
+
+.viewer.dragging {
+    cursor: grabbing;
+}
+
+.viewer img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 28px;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.arrow.left {
+    left: 12px;
+}
+
+.arrow.right {
+    right: 12px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+button.ctrl {
+    border: 1px solid #bbb;
+    background: #fff;
+    padding: 9px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.hint {
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+    margin-top: 9px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<h1>Vintage Championship Boxing Belt — 360° View</h1>
+
+<div class="viewer" id="viewer">
+
+<button class="arrow left" id="prev">‹</button>
+
+<img id="spin"
+src="../boxingbelt_1.jpg"
+alt="Vintage Championship Boxing Belt">
+
+<button class="arrow right" id="next">›</button>
+
+</div>
+
+<div class="controls">
+<button class="ctrl" id="play">Auto Spin</button>
+<button class="ctrl" id="reset">Reset</button>
+</div>
+
+<div class="hint">
+Drag left or right to rotate • Use the arrows on touch devices
+</div>
+
+</div>
+
+<script>
+
+const frames = [
+"../boxingbelt_1.jpg",
+"../boxingbelt_2.jpg",
+"../boxingbelt_3.jpg",
+"../boxingbelt_4.jpg",
+"../boxingbelt_5.jpg"
+];
+
+const viewer = document.getElementById("viewer");
+const img = document.getElementById("spin");
+
+let index = 0;
+let dragging = false;
+let lastX = 0;
+let auto = null;
+
+function showFrame() {
+    img.src = frames[index];
+}
+
+function nextFrame() {
+    index = (index + 1) % frames.length;
+    showFrame();
+}
+
+function prevFrame() {
+    index = (index - 1 + frames.length) % frames.length;
+    showFrame();
+}
+
+document.getElementById("next").onclick = nextFrame;
+document.getElementById("prev").onclick = prevFrame;
+
+viewer.addEventListener("pointerdown", e => {
+    dragging = true;
+    lastX = e.clientX;
+    viewer.classList.add("dragging");
+    viewer.setPointerCapture(e.pointerId);
+});
+
+viewer.addEventListener("pointermove", e => {
+
+    if (!dragging) return;
+
+    const movement = e.clientX - lastX;
+
+    if (Math.abs(movement) >= 15) {
+
+        if (movement < 0) {
+            nextFrame();
+        } else {
+            prevFrame();
+        }
+
+        lastX = e.clientX;
+    }
+});
+
+viewer.addEventListener("pointerup", () => {
+    dragging = false;
+    viewer.classList.remove("dragging");
+});
+
+viewer.addEventListener("pointercancel", () => {
+    dragging = false;
+    viewer.classList.remove("dragging");
+});
+
+document.getElementById("reset").onclick = () => {
+    index = 0;
+    showFrame();
+};
+
+document.getElementById("play").onclick = function() {
+
+    if (auto) {
+
+        clearInterval(auto);
+        auto = null;
+        this.textContent = "Auto Spin";
+
+    } else {
+
+        auto = setInterval(nextFrame, 700);
+        this.textContent = "Stop Spin";
+
+    }
+
+};
+
+showFrame();
+
+</script>
+
+</body>
+</html>
